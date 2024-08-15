@@ -1,52 +1,118 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 function Contact() {
-  return (
-    <>
-    <div className="flex h-screen items-center justify-center">
-        <div id="my_modal_3" className="border-[2px] shadow-md p-5 rounded-md">
-       
-        <h2 className="font-bold text-lg">Contact Us</h2>
-        <div className="mt-4 space-y-2">
-            <span>Name</span>
-            <br />
-            <input type="text"
-            placeholder="Enter your name" className="w-80 px-3 py-1 border rounded outline-none"
-            />
-        </div>
-        {/*email*/}
-        <div className="mt-4 space-y-2">
-            <span>Email</span>
-            <br />
-            <input type="email"
-            placeholder="Email address" className="w-80 px-3 py-1 border rounded outline-none"
-            />
-        </div>
-        {/*Message*/}
-        <div className="mt-4 space-y-2">
-            <span>Message</span>
-            <br />
-            <input type="text"
-            placeholder="Type your message" className="w-80 px-3 py-8 border rounded outline-none"
-            />
-        </div>
-        <div>
-            {/*Button*/}
-            <div className="mt-4">
-                <button className="btn bg-blue-500 text-white rounded px-3 py-1">Submit</button>
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
+  const navigate = useNavigate(); // Initialize navigate for navigation
+  const onSubmit = async (data) => {
+    const userInfo = {
+      fullname: data.fullname,
+      email: data.email,
+      message: data.message,
+    };
+
+    try {
+      const res = await axios.post("https://getform.io/f/bjjeqdxb", userInfo);
+      console.log(res.data);
+      if (res.data) {
+        toast.success("Message sent successfully");
+        // Navigate or perform other actions as needed
+        // navigate(from, { replace: true });
+      }
+      localStorage.setItem("Contacts", JSON.stringify(res.data.user));
+    } catch (err) {
+      if (err.response) {
+        console.log(err);
+        toast.error("Error: " + err.response.data.message);
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    }
+  };
+
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="w-[600px]">
+        <div className="modal-box">
+          <form onSubmit={handleSubmit(onSubmit)} method="dialog">
+            <Link
+              to="/"
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            >
+              ✕
+            </Link>
+
+            <h3 className="font-bold text-lg">Contact us</h3>
+            <div className="mt-4 space-y-2">
+              <span>Name</span>
+              <br />
+              <input
+                type="text"
+                placeholder="Enter your fullname"
+                className="w-80 px-3 py-1 border rounded-md outline-none"
+                {...register("fullname", { required: true })}
+              />
+              <br />
+              {errors.fullname && (
+                <span className="text-sm text-red-500">
+                  This field is required
+                </span>
+              )}
             </div>
-            
-            <Link to="/">
-           <button className="mt-6 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 duration-300">Back</button>
-           </Link>
-            
+            {/* Email */}
+            <div className="mt-4 space-y-2">
+              <span>Email</span>
+              <br />
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="w-80 px-3 py-1 border rounded-md outline-none"
+                {...register("email", { required: true })}
+              />
+              <br />
+              {errors.email && (
+                <span className="text-sm text-red-500">
+                  This field is required
+                </span>
+              )}
+            </div>
+            {/* Message */}
+            <div className="mt-4 space-y-2">
+              <span>Message</span>
+              <br />
+              <textarea
+                placeholder="Enter your message"
+                className="w-80 px-3 py-1 border rounded-md outline-none"
+                {...register("message", { required: true })}
+              />
+              <br />
+              {errors.message && (
+                <span className="text-sm text-red-500">
+                  This field is required
+                </span>
+              )}
+            </div>
+            <div className="mt-4">
+              <button
+                type="submit"
+                className="btn btn-success w-full"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
         </div>
-        </div>
+      </div>
     </div>
-    </>
-  )
+  );
 }
 
-export default Contact
+export default Contact;
